@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Aventura Craft & Roll</title>
+<style>
+:root{
+  --bg:#e7f6ff; --panel:#ffffff; --accent:#ff6b88; --muted:#415162;
+  --good:#6ee7b7; --bad:#ff8a8a;
+}
+*{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+body{margin:0;background:linear-gradient(180deg,#eaf7ff, #f7fbff);color:#082032;display:flex;align-items:stretch;min-height:100vh;}
+.app{display:grid;grid-template-columns:320px 1fr;gap:14px;width:100%;max-width:1200px;margin:auto;padding:18px;}
+.sidebar{background:var(--panel);border-radius:12px;padding:12px;box-shadow:0 10px 30px rgba(10,20,40,0.06)}
+.main{background:var(--panel);border-radius:12px;padding:12px;box-shadow:0 10px 30px rgba(10,20,40,0.06);position:relative;overflow:hidden}
+.header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(90deg,#fff,#ffe);display:grid;place-items:center;font-weight:900;color:var(--accent)}
+.hud{display:flex;flex-direction:column;gap:8px}
+.hud .row{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-radius:8px;background:linear-gradient(180deg,#fff,#f7fbff);font-weight:700}
+.controls{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.btn{padding:8px 10px;border-radius:8px;border:0;background:var(--accent);color:#fff;cursor:pointer;font-weight:800}
+.btn.ghost{background:transparent;border:1px solid rgba(10,20,40,0.06);color:var(--muted)}
+.small{font-size:13px;color:var(--muted)}
+.map-wrap{position:relative;width:100%;height:640px;background:linear-gradient(180deg,#dff7ff,#eaf6ff);overflow:hidden;border-radius:10px}
+.canvas{position:absolute;left:0;top:0}
+.tile{position:absolute;display:grid;place-items:center;font-weight:800;pointer-events:auto}
+.player{position:absolute;z-index:60;display:grid;place-items:center;font-weight:900;border-radius:8px;box-shadow:0 6px 20px rgba(10,20,40,0.12)}
+.toast{position:absolute;left:50%;transform:translateX(-50%);top:14px;background:rgba(0,0,0,0.7);color:#fff;padding:8px 12px;border-radius:8px;font-weight:700;display:none;z-index:120}
+.inventory{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.slot{background:linear-gradient(180deg,#fff,#f2f8ff);padding:8px;border-radius:6px;border:1px solid rgba(10,20,40,0.04);text-align:center;font-weight:800}
+.log{height:120px;overflow:auto;background:#f8fbff;padding:8px;border-radius:8px;border:1px solid rgba(10,20,40,0.04);font-size:13px}
+.center-note{display:block;text-align:center;color:var(--muted);margin-top:14px}
+.footer-actions{display:flex;gap:8px;margin-top:12px}
+.progress{height:8px;background:#e6f2ff;border-radius:6px;overflow:hidden}
+.progress > i{display:block;height:100%;background:linear-gradient(90deg,#ffb3c7,#ff6b88)}
+/* responsive */
+@media (max-width:980px){
+  .app{grid-template-columns:1fr; padding:12px}
+  .map-wrap{height:520px}
+}
+</style>
+</head>
+<body>
+<div class="app" role="application">
+  <aside class="sidebar" aria-label="Painel">
+    <div class="header">
+      <div class="logo">AC</div>
+      <div>
+        <div style="font-weight:900">Aventura Craft & Roll</div>
+        <div class="small">Mistura de exploração, crafting e RPG</div>
+      </div>
+    </div>
+
+    <div class="hud">
+      <div class="row"><span>Vida</span><span id="hp">100</span></div>
+      <div class="row"><span>XP</span><span id="xp">0</span></div>
+      <div class="row"><span>Nível</span><span id="lvl">1</span></div>
+      <div class="progress" title="XP para próximo nível" style="margin-top:6px"><i id="xpbar" style="width:10%"></i></div>
+    </div>
+
+    <div style="margin-top:12px">
+      <div style="font-weight:800;margin-bottom:6px">Inventário</div>
+      <div class="inventory" id="inventory"></div>
+      <div class="small center-note">Use para craft, comida e armas</div>
+    </div>
+
+    <div style="margin-top:12px">
+      <div style="font-weight:800;margin-bottom:6px">Ações rápidas</div>
+      <div class="controls">
+        <button class="btn" id="btnGather">Coletar (E)</button>
+        <button class="btn" id="btnCraft">Craft (C)</button>
+        <button class="btn ghost" id="btnQuest">Missões</button>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <div style="font-weight:800;margin-bottom:6px">Registro</div>
+      <div class="log" id="log"></div>
+    </div>
+  </aside>
+
+  <main class="main" aria-live="polite">
+    <div class="toast" id="toast">Mensagem</div>
+
+    <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-weight:900">Mapa da Ilha</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="small">WASD / Setas mover • E coletar • C craft • F atacar</div>
+      </div>
+    </div>
+
+    <div class="map-wrap" id="mapWrap" aria-label="Área de jogo">
+      <canvas id="world" class="canvas"></canvas>
+      <!-- player será um elemento para melhor acessibilidade -->
+      <div id="playerEl" class="player" style="width:48px;height:48px;background:linear-gradient(90deg,#fff,#ffdede);left:0;top:0">🙂</div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+      <div>
+        <button class="btn" id="btnSave">Salvar</button>
+        <button class="btn ghost" id="btnLoad">Carregar</button>
+      </div>
+      <div class="center-note small">Objetivo: completar 3 missões e derrotar o mini‑boss</div>
+    </div>
+  </main>
+</div>
+
+<script>
+/* Protótipo Aventura Craft & Roll
+   - Grid world, recursos, NPCs, monstros simples
+   - Player controla movimento, coleta, craft e combate
+   - Inventário simples, XP e level
+   - Use as teclas mostradas no HUD
+*/
+
+(() => {
+  // Config
+  const TILE = 48;
+  const COLS = 16;
+  const ROWS = 12;
+  const CANVAS_W = COLS * TILE;
+  const CANVAS_H = ROWS * TILE;
+  const resourceTypes = ['tree','stone','food','grass'];
+  const rand = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+  const audioEnabled = true;
+
+  // DOM
+  const canvas = document.getElementById('world');
+  canvas.width = CANVAS_W; canvas.height = CANVAS_H;
+  const ctx = canvas.getContext('2d');
+  const playerEl = document.getElementById('playerEl');
+  const toast = document.getElementById('toast');
+  const logEl = document.getElementById('log');
+  const invEl = document.getElementById('inventory');
+  const hpEl = document.getElementById('hp');
+  const xpEl = document.getElementById('xp');
+  const lvlEl = document.getElementById('lvl');
+  const xpBar = document.getElementById('xpbar');
+
+  // State
+  const world = [];
+  const entities = []; // monsters and NPCs
+  let player = {
+    x: Math.floor(COLS/2),
+    y: Math.floor(ROWS/2),
+    hp: 100,
+    xp: 0,
+    lvl: 1,
+    facing: 'down',
+    inv: {wood:0,stone:0,food:0,stick:0},
+    equipped: null
+  };
+
+  // Init world grid with resources
+  function genWorld(){
+    for(let y=0;y<ROWS;y++){
+      world[y] = [];
+      for(let x=0;x<COLS;x++){
+        let r = {type:'grass',hp:0};
+        const d = Math.random();
+        if(d < 0.08) r = {type:'tree',hp:3};
+        else if(d < 0.14) r = {type:'stone',hp:4};
+        else if(d < 0.18) r = {type:'food',hp:1};
+        world[y][x] = r;
+      }
+    }
+    // place some monsters/NPCs
+    entities.length = 0;
+    entities.push({type:'npc',x:2,y:2,text:"Olá, aventureiro! Traga 5 wood.",quest:{need:'wood',qty:5,done:false}});
+    entities.push({type:'monster',x:COLS-3,y:ROWS-3,hp:12,atk:6});
+  }
+
+  // Render
+  function draw(){
+    ctx.clearRect(0,0,CANVAS_W,CANVAS_H);
+    for(let y=0;y<ROWS;y++){
+      for(let x=0;x<COLS;x++){
+        const cell = world[y][x];
+        const px = x*TILE, py = y*TILE;
+        // ground
+        ctx.fillStyle = cell.type === 'grass' ? '#dfffdc' : '#e9f2ff';
+        ctx.fillRect(px,py,TILE,TILE);
+        ctx.strokeStyle = 'rgba(0,0,0,0.04)';
+        ctx.strokeRect(px+0.5,py+0.5,TILE-1,TILE-1);
+        // resource
+        if(cell.type === 'tree'){
+          ctx.fillStyle = '#2e8b57';
+          ctx.beginPath(); ctx.ellipse(px+TILE/2,py+TILE/2 -6,18,14,0,0,2*Math.PI); ctx.fill();
+          ctx.fillStyle = '#8b5a2b'; ctx.fillRect(px+TILE/2-6,py+TILE/2-6,12,18);
+        } else if(cell.type === 'stone'){
+          ctx.fillStyle = '#9aa0a6'; ctx.fillRect(px+12,py+12,24,24);
+        } else if(cell.type === 'food'){
+          ctx.fillStyle = '#ffb74d'; ctx.beginPath(); ctx.arc(px+TILE/2,py+TILE/2,10,0,2*Math.PI); ctx.fill();
+        }
+      }
+    }
+    // entities
+    for(const e of entities){
+      const ex = e.x*TILE, ey=e.y*TILE;
+      if(e.type === 'npc'){
+        ctx.fillStyle = '#fff59d'; ctx.fillRect(ex+8,ey+8,32,32);
+        ctx.fillStyle='#000'; ctx.fillText('NPC',ex+14,ey+30);
+      } else if(e.type==='monster'){
+        ctx.fillStyle = '#ff8a8a'; ctx.fillRect(ex+6,ey+6,36,36);
+        ctx.fillStyle='#600'; ctx.fillText('M',ex+18,ey+30);
+      }
+    }
+    // draw grid highlight on player tile
+    ctx.strokeStyle = 'rgba(255,110,140,0.35)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(player.x*TILE+3, player.y*TILE+3, TILE-6, TILE-6);
+    // update player element pos
+    playerEl.style.left = (player.x*TILE + (TILE-48)/2) + 'px';
+    playerEl.style.top = (player.y*TILE + (TILE-48)/2) + 'px';
+    // HUD
+    hpEl.textContent = player.hp;
+    xpEl.textContent = player.xp;
+    lvlEl.textContent = player.lvl;
+    const next = 50 + (player.lvl-1)*50;
+    xpBar.style.width = Math.min(100, Math.round(player.xp / next * 100)) + '%';
+  }
+
+  // Utility: toast/log
+  function showToast(t){
+    toast.textContent = t; toast.style.display='block';
+    setTimeout(()=> toast.style.display='none',1600);
+  }
+  function log(s){
+    const at = document.createElement('div'); at.textContent = s; logEl.prepend(at);
+  }
+
+  // Audio (tones)
+  let audioCtx;
+  function tone(freq, t=0.08){
+    if(!audioCtx && audioEnabled){
+      try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ audioCtx = null; }
+    }
+    if(!audioCtx) return;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type='sine'; o.frequency.value = freq; g.gain.value = 0.06;
+    o.connect(g); g.connect(audioCtx.destination); o.start();
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + t);
+    setTimeout(()=> o.stop(), t*1000+20);
+  }
+
+  // Interactions: gather, attack, craft
+  function gather(){
+    const c = world[player.y][player.x];
+    if(c.type === 'tree'){
+      c.hp--; log('Você cortou madeira.'); tone(880,0.08);
+      if(c.hp<=0){ c.type='grass'; player.inv.wood = (player.inv.wood||0)+2; showToast('+2 wood'); }
+      updateInv();
+      draw();
+    } else if(c.type === 'stone'){
+      c.hp--; log('Você minerou pedra.'); tone(520,0.08);
+      if(c.hp<=0){ c.type='grass'; player.inv.stone = (player.inv.stone||0)+2; showToast('+2 stone'); }
+      updateInv(); draw();
+    } else if(c.type === 'food'){
+      c.hp=0; c.type='grass'; player.inv.food = (player.inv.food||0)+1; showToast('+1 food'); log('Você coletou comida'); updateInv(); draw();
+    } else {
+      // check entity at tile
+      const e = entities.find(q=> q.x===player.x && q.y===player.y);
+      if(e && e.type==='npc'){
+        talkNPC(e);
+      } else showToast('Nada para coletar aqui');
+    }
+  }
+
+  function talkNPC(npc){
+    if(npc.quest && !npc.quest.done){
+      const need = npc.quest.need; const qty = npc.quest.qty;
+      const have = player.inv[need] || 0;
+      if(have >= qty){
+        player.inv[need] -= qty;
+        npc.quest.done = true;
+        player.xp += 40; showToast('Missão cumprida! +40 XP'); log('NPC: Obrigado! Você completou a missão.');
+        tone(1200,0.12);
+        updateInv();
+      } else {
+        showToast(npc.text);
+      }
+    } else {
+      showToast('NPC: Obrigado por visitar!');
+    }
+    draw();
+  }
+
+  function attack(){
+    // melee attack any monster on adjacent tile or same tile
+    const target = entities.find(e => e.type==='monster' && Math.abs(e.x-player.x)<=1 && Math.abs(e.y-player.y)<=1);
+    if(!target){ showToast('Nenhum inimigo próximo'); return; }
+    // roll d20 + level
+    const roll = rand(1,20) + player.lvl;
+    const dmg = rand(4,8) + Math.floor(player.lvl/2);
+    log(`Ataque: rolagem ${roll} -> dano ${dmg}`);
+    if(roll > 8){ // success threshold simplified
+      target.hp -= dmg; showToast('Acertou!'); tone(880,0.08);
+      if(target.hp <= 0){
+        // drop loot
+        const dropW = rand(1,3); player.inv.wood = (player.inv.wood||0)+dropW;
+        const dropStone = rand(0,2); player.inv.stone = (player.inv.stone||0)+dropStone;
+        player.xp += 60; showToast('Inimigo derrotado! XP +60'); log(`Inimigo caiu. Loot: wood ${dropW}, stone ${dropStone}`);
+        // remove entity
+        const idx = entities.indexOf(target); if(idx>=0) entities.splice(idx,1);
+        updateInv();
+      } else {
+        // monster retaliates
+        player.hp -= target.atk || 4; showToast('Você foi atingido!'); tone(300,0.12);
+      }
+    } else { showToast('Erro no ataque!'); player.hp -= 2; tone(220,0.1); }
+    checkPlayerState(); draw();
+  }
+
+  function checkPlayerState(){
+    if(player.hp <= 0){
+      showToast('Você morreu. Salvando progresso automático...'); log('Game Over. Recarregue para tentar novamente');
+      // respawn
+      player.hp = 60; player.x = Math.floor(COLS/2); player.y = Math.floor(ROWS/2); draw();
+    }
+    // level up if xp threshold
+    const next = 50 + (player.lvl-1)*50;
+    if(player.xp >= next){
+      player.xp -= next; player.lvl++; player.hp = Math.min(100, player.hp+20);
+      showToast('Subiu de nível!'); log('Level up: ' + player.lvl);
+      tone(1500,0.18);
+    }
+  }
+
+  function craft(){
+    // simple recipes: stick = wood x2 -> stick x1; axe = wood x3 + stone x2 -> axe
+    const inv = player.inv;
+    if(inv.wood >= 2 && inv.stick < 5){
+      inv.wood -= 2; inv.stick = (inv.stick||0)+1; showToast('Fez um stick'); log('Craft: stick +1');
+      tone(900,0.08);
+    } else if(inv.wood >=3 && inv.stone >=2){
+      inv.wood -=3; inv.stone -=2; player.inv.axe = (player.inv.axe||0)+1; showToast('Craft: machado'); log('Você fez um machado!');
+      tone(1100,0.12);
+    } else {
+      showToast('Receita indisponível');
+    }
+    updateInv(); draw();
+  }
+
+  // Movement
+  const keys = {};
+  window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; // actions
+    if(e.key === 'e' || e.key === 'E') gather();
+    if(e.key === 'f' || e.key === 'F') attack();
+    if(e.key === 'c' || e.key === 'C') craft();
+    e.preventDefault();
+  });
+  window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+
+  function tick(){
+    if(keys['arrowup'] || keys['w']) move(0,-1);
+    else if(keys['arrowdown'] || keys['s']) move(0,1);
+    else if(keys['arrowleft'] || keys['a']) move(-1,0);
+    else if(keys['arrowright'] || keys['d']) move(1,0);
+  }
+  let lastMove = 0;
+  function move(dx,dy){
+    const nowt = Date.now();
+    if(nowt - lastMove < 160) return; // rate limit movement speed
+    lastMove = nowt;
+    const nx = clamp(player.x + dx, 0, COLS-1);
+    const ny = clamp(player.y + dy, 0, ROWS-1);
+    player.x = nx; player.y = ny;
+    draw();
+    // proximity events
+    const ent = entities.find(q=> Math.abs(q.x-player.x)<=1 && Math.abs(q.y-player.y)<=1 && q.type==='monster');
+    if(ent) showToast('Monstro próximo! Pressione F para atacar');
+  }
+
+  // Helpers
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+  function updateInv(){
+    invEl.innerHTML = '';
+    const keysOrder = ['wood','stone','food','stick','axe'];
+    keysOrder.forEach(k=>{
+      const qty = player.inv[k] || 0;
+      const div = document.createElement('div'); div.className='slot'; div.textContent = `${k}: ${qty}`; invEl.appendChild(div);
+    });
+    coinCount(); // small hint reuse
+  }
+  function coinCount(){ /* placeholder for later shop */ }
+
+  // Save/load
+  function saveGame(){
+    const s = {player,world,entities};
+    localStorage.setItem('ac_save', JSON.stringify(s));
+    showToast('Jogo salvo');
+  }
+  function loadGame(){
+    const s = localStorage.getItem('ac_save');
+    if(!s) { showToast('Nenhum save encontrado'); return; }
+    try {
+      const data = JSON.parse(s);
+      Object.assign(player, data.player);
+      // world & entities override
+      for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++) world[y][x] = data.world[y][x];
+      entities.length=0; data.entities.forEach(e=>entities.push(e));
+      updateInv(); draw(); showToast('Save carregado');
+    } catch(e){ showToast('Falha no carregamento'); }
+  }
+
+  // Events: random spawn monster
+  function randomSpawn(){
+    if(Math.random() < 0.08){
+      const x = rand(1,COLS-2), y=rand(1,ROWS-2);
+      entities.push({type:'monster',x,y,hp:8+rand(0,6),atk:3+rand(0,4)});
+      log('Um monstro apareceu na ilha!');
+    }
+  }
+
+  // Bind UI buttons
+  document.getElementById('btnGather').addEventListener('click', gather);
+  document.getElementById('btnCraft').addEventListener('click', craft);
+  document.getElementById('btnQuest').addEventListener('click', ()=>{
+    const q = entities.find(e=>e.type==='npc');
+    if(q) alert('Missão: ' + (q.quest && !q.quest.done ? `Entregar ${q.quest.qty} ${q.quest.need}` : 'Nada ativo'));
+  });
+  document.getElementById('btnSave').addEventListener('click', saveGame);
+  document.getElementById('btnLoad').addEventListener('click', loadGame);
+
+  // Game loop
+  genWorld();
+  updateInv();
+  draw();
+  setInterval(tick, 120);
+  setInterval(() => { randomSpawn(); draw(); }, 6000);
+
+  // initial log
+  log('Bem-vindo à ilha! Explore, colete recursos e evolua.');
+  showToast('Use WASD para se mover');
+
+  // small exposure for debugging
+  window.__AC = {player,world,entities,draw};
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+:root{
+  --bg1:#f0f8ff; --card:#ffffff; --accent:#ff7aa2; --accent-2:#5ec4ff;
+  --good:#6ee7b7; --bad:#ff8a8a; --muted:#52606d;
+  --maxw:1200px; --glass: rgba(255,255,255,0.8);
+}
+*{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;}
+body{margin:0;background:linear-gradient(180deg,#fff9fb 0%,var(--bg1) 100%);color:#0b1b2b;min-height:100vh;}
+a{color:inherit;text-decoration:none}
+.topbar{padding:18px 24px;background:linear-gradient(90deg,var(--accent-2),var(--accent));color:#fff;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,#fff,#ffdce0);display:grid;place-items:center;font-weight:900;color:#ff4a76}
+.logo.small{width:46px;height:46px}
+.tag{opacity:0.95;margin:0;font-size:13px}
+.container{max-width:var(--maxw);margin:28px auto;display:grid;grid-template-columns:2fr 1fr;gap:18px;padding:0 16px}
+.centered{align-items:start}
+.card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 12px 40px rgba(12,24,40,0.06);border:1px solid rgba(12,24,40,0.04)}
+.intro-card{text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center}
+.mascote-large{width:120px;height:120px;border-radius:16px;background:linear-gradient(135deg,#fff,#ffe);display:grid;place-items:center;font-weight:900;font-size:36px;color:#ff3f6c;box-shadow:0 16px 40px rgba(255,64,108,0.08)}
+.lead{max-width:560px;color:var(--muted)}
+.actions{display:flex;gap:12px}
+.btn{padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:800}
+.btn-primary{background:linear-gradient(90deg,var(--accent),#ff4a76);color:#fff;box-shadow:0 8px 24px rgba(255,74,118,0.12)}
+.btn-ghost{background:transparent;border:2px solid rgba(10,24,40,0.06);color:var(--muted)}
+.features ul{margin:8px 0 0 18px}
+.bottombar{padding:14px;text-align:center;opacity:0.9;color:var(--muted)}
+
+/* Layout do jogo */
+.app{max-width:1200px;margin:24px auto;display:grid;grid-template-columns:320px 1fr;gap:16px;padding:12px}
+.sidebar{display:flex;flex-direction:column;gap:12px}
+.logo-compact{display:flex;gap:10px;align-items:center;color:#fff}
+.logo-compact .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#fff,#ffdce0);color:#ff3f6c;display:grid;place-items:center}
+.panel .panel-row{display:flex;justify-content:space-between;align-items:center}
+.panel .levels{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.level-btn{padding:8px 10px;border-radius:8px;border:1px solid rgba(10,24,40,0.06);background:#fff;cursor:pointer}
+.panel-foot{display:flex;justify-content:space-between;margin-top:12px;color:var(--muted)}
+.shop-compact{margin-top:auto;display:flex;gap:8px;align-items:center;justify-content:space-between}
+
+/* Playfield */
+.playfield{background:linear-gradient(180deg,#fff,#f5f8ff);border-radius:12px;min-height:520px;padding:12px;position:relative;overflow:hidden;border:1px solid rgba(10,24,40,0.03);display:flex;flex-direction:column;gap:10px}
+.center-note{margin:auto;color:var(--muted);font-weight:700}
+.footer-bar{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+
+/* Targets */
+.target{position:absolute;border-radius:50%;display:grid;place-items:center;font-weight:900;user-select:none;touch-action:none;padding:6px}
+.target.good{background:linear-gradient(135deg,#e8fff2,#bff3d7);border:3px solid #36c57a;color:#06482a}
+.target.bad{background:linear-gradient(135deg,#fff0f0,#ffdede);border:3px solid #ff6b6b;color:#6b1f16}
+.target.floating{transition:transform .22s cubic-bezier(.2,.9,.2,1),opacity .16s}
+
+/* Badge */
+.badge{background:linear-gradient(180deg,#fff,#f7fbff);border-radius:8px;padding:6px 10px;border:1px solid rgba(11,22,45,0.02);font-weight:800;color:var(--accent-2)}
+
+/* Partículas and animations */
+.pf{pointer-events:none;border-radius:50%;filter:drop-shadow(0 6px 16px rgba(10,20,40,0.06))}
+.masc-anim{transition:opacity .4s,transform .25s}
+
+/* Manual layout */
+.page-manual .container{grid-template-columns:1fr 360px}
+
+/* Responsive */
+@media (max-width:920px){
+  .container{grid-template-columns:1fr; padding:0 12px}
+  .app{grid-template-columns:1fr}
+  .playfield{min-height:420px}
+}

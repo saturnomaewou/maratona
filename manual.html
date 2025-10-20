@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Aventura Craft & Roll — Manual</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Pequenas adaptações específicas ao manual */
+    body{background:linear-gradient(180deg,#fffaf6,#f0fbff)}
+    .manual-hero{display:flex;gap:14px;align-items:center;padding:18px;border-radius:12px;background:linear-gradient(90deg,#fff,#fffdf6);box-shadow:0 12px 30px rgba(10,20,40,0.06);margin-bottom:18px}
+    .manual-hero .logo{width:72px;height:72px;border-radius:12px;display:grid;place-items:center;font-weight:900;color:#ff4a76;background:linear-gradient(135deg,#fff,#ffdce0)}
+    .section{margin-bottom:14px}
+    .kbd{background:#111;color:#fff;padding:4px 8px;border-radius:6px;font-weight:800;font-size:13px}
+    .recipe{display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px;background:#fff}
+    .recipe .ing{font-weight:800;color:#40576b}
+  </style>
+</head>
+<body class="page page-manual">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo small">AC</div>
+      <div>
+        <h1>Manual — Aventura Craft & Roll</h1>
+        <p class="tag">Guia rápido de sobrevivência, crafting e combate</p>
+      </div>
+    </div>
+    <nav class="nav-inline">
+      <a class="btn btn-ghost" href="index.html">Voltar</a>
+      <a class="btn btn-primary" href="game.html">Jogar</a>
+    </nav>
+  </header>
+
+  <main class="container" style="max-width:1100px;margin:20px auto">
+    <section class="card manual-hero">
+      <div class="logo">AC</div>
+      <div>
+        <h2 style="margin:0">Guia rápido</h2>
+        <p class="small" style="margin-top:6px">Explore a ilha, colete recursos, craft itens, complete missões e enfrente monstros. Use WASD ou setas para se mover e as teclas de ação para interagir.</p>
+      </div>
+    </section>
+
+    <section class="card section">
+      <h3>Controles</h3>
+      <ul>
+        <li><span class="kbd">W A S D</span> ou <span class="kbd">← ↑ ↓ →</span>: mover o personagem</li>
+        <li><span class="kbd">E</span>: coletar / interagir (árvores, pedras, NPCs)</li>
+        <li><span class="kbd">F</span>: atacar inimigos próximos</li>
+        <li><span class="kbd">C</span>: abrir menu rápido de crafting (cria itens com materiais)</li>
+        <li>Botões na interface: <em>Coletar</em>, <em>Craft</em>, <em>Missões</em>, <em>Salvar / Carregar</em></li>
+      </ul>
+    </section>
+
+    <section class="card section">
+      <h3>Recursos e como coletar</h3>
+      <ul>
+        <li><strong>Tree (árvore)</strong>: clique com <span class="kbd">E</span> ou use o botão Coletar para cortar; dá <span class="kbd">wood</span>.</li>
+        <li><strong>Stone (pedra)</strong>: clique com <span class="kbd">E</span> para minerar; dá <span class="kbd">stone</span>.</li>
+        <li><strong>Food (comida)</strong>: colete para recuperar ou usar como recurso.</li>
+        <li>Ao esgotar uma árvore/pedra ela vira grama (reaparecimento é aleatório).</li>
+      </ul>
+    </section>
+
+    <section class="card section">
+      <h3>Inventário e itens importantes</h3>
+      <ul>
+        <li><strong>wood</strong>, <strong>stone</strong>, <strong>food</strong>, <strong>stick</strong>, <strong>axe</strong> aparecem no inventário à esquerda.</li>
+        <li>Use <span class="kbd">C</span> ou o botão Craft para transformar recursos.</li>
+        <li>Itens têm usos: sticks para ferramentas, food para restaurar HP, axe melhora coleta.</li>
+      </ul>
+    </section>
+
+    <section class="card section">
+      <h3>Receitas de Craft (rápidas)</h3>
+      <div style="display:grid;gap:8px">
+        <div class="recipe">
+          <div style="flex:1"><strong>Stick</strong><div class="small">Resultado: 1 stick</div></div>
+          <div class="ing">Necessita: wood x2</div>
+        </div>
+
+        <div class="recipe">
+          <div style="flex:1"><strong>Machado (axe)</strong><div class="small">Resultado: ferramenta</div></div>
+          <div class="ing">Necessita: wood x3; stone x2</div>
+        </div>
+
+        <div class="recipe">
+          <div style="flex:1"><strong>Comida processada</strong><div class="small">Resultado: cura de HP</div></div>
+          <div class="ing">Necessita: food x1 (+ opcional: cook)</div>
+        </div>
+      </div>
+      <p class="small" style="margin-top:8px">Dica: priorize sticks e um machado cedo — aceleram a coleta de madeira.</p>
+    </section>
+
+    <section class="card section">
+      <h3>Combate e mecânica D&D simplificada</h3>
+      <ul>
+        <li>Ao atacar (<span class="kbd">F</span>) o jogo faz uma rolagem (1–20) com bônus de nível.</li>
+        <li>Acertos causam dano; monstros retaliam. Gerencie HP e equipa comida para recuperar.</li>
+        <li>Derrotar inimigos dá XP e às vezes loot (wood/stone).</li>
+        <li>Level up: a cada vez que acumular XP suficiente você sobe de nível e ganha HP bônus.</li>
+      </ul>
+    </section>
+
+    <section class="card section">
+      <h3>Missões e NPCs</h3>
+      <ul>
+        <li>NPCs podem dar missões (ex.: entregar wood x5). Verifique o registro ou aproxime-se e pressione <span class="kbd">E</span>.</li>
+        <li>Completar missões recompensa com XP e materiais.</li>
+        <li>Use o botão <strong>Missões</strong> para ver objetivos ativos.</li>
+      </ul>
+    </section>
+
+    <section class="card section">
+      <h3>Sobrevivência e dicas</h3>
+      <ul>
+        <li>Explore sistematicamente: percorra linhas do mapa para achar recursos e NPCs.</li>
+        <li>Evite enfrentar muitos monstros simultaneamente; atraia um por vez.</li>
+        <li>Use crafts defensivos (sticks/axe) antes de procurar o boss.</li>
+        <li>Salve frequentemente com o botão <strong>Salvar</strong>.</li>
+      </ul>
+    </section>
+
+    <section class="card section">
+      <h3>Progressão e objetivos</h3>
+      <ul>
+        <li>Acumule XP para subir de nível; níveis aumentam seus bônus de ataque/vida.</li>
+        <li>Complete 3 missões e derrote o mini‑boss para “concluir a sessão”.</li>
+        <li>Ganhe coins em mini‑jogos e loot futuro para desbloquear skins/consumíveis (implementações futuras).</li>
+      </ul>
+    </section>
+
+    <section class="card section">
+      <h3>Problemas comuns</h3>
+      <ul>
+        <li>Sem recursos visíveis: mova-se por mais áreas; recursos são gerados aleatoriamente.</li>
+        <li>Trava ao carregar: recarregue a página e pressione <strong>Salvar</strong> regularmente.</li>
+        <li>Sem som: ative o áudio do navegador (WebAudio pede permissão em alguns navegadores).</li>
+      </ul>
+    </section>
+
+    <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:10px">
+      <div class="small">Boa sorte, aventureiro(a)! Explore e divirta-se.</div>
+      <div>
+        <a class="btn btn-primary" href="game.html">Jogar agora</a>
+        <a class="btn btn-ghost" href="index.html">Voltar</a>
+      </div>
+    </div>
+  </main>
+
+  <footer style="text-align:center;padding:14px;margin-top:18px;color:#6b7280">
+    <small>Manual do protótipo — ajustes e receitas podem mudar conforme atualizações</small>
+  </footer>
+</body>
+</html>
